@@ -95,6 +95,7 @@ df_testscores
 #Applying the function to the test scores data 
 Results_output <- PassOrFailFunction(df_testscores)
 Results_output
+
 ```
 
 12. QUESTION: Which option of `if` and `else` vs. `ifelse` worked? Why?
