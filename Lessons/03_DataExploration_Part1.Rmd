@@ -5,7 +5,7 @@ date: "Spring 2022"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 
@@ -98,20 +98,21 @@ Commons functions to import datasets and store as data frames are *read.table()*
 ```{r importdata}
 # Absolute file path (not recommended)
 #read.csv("/Users/lmm89/OneDrive/Duke_University/7_Spring2021/ENV872_EDA/GitRepo_EDA_S2021/Environmental_Data_Analytics_2021/Data/Raw/USGS_Site02085000_Flow_Raw.csv")
-
+getwd()
 # Relative file path (friendly for users regardless of machine)
-USGS.flow.data <- read.csv("../Data/Raw/USGS_Site02085000_Flow_Raw.csv")   
+USGS.flow.data <- read.csv("../Data/Raw/USGS_Site02085000_Flow_Raw.csv", stringsAsFactors = TRUE)  ##To move to the oarent folder use two dots
+
 #For knitting the .Rmd file you need to added an extra "." to the relative path
 # R Markdown documents are compiled in separate R sessions to enhance reproducibility, so you current R console has nothing to do with the compilation of the R Markdown documents.
 
 # What happens if we don't assign a name to our imported dataset?
-#read.csv("../Data/Raw/USGS_Site02085000_Flow_Raw.csv")
+read.csv("../Data/Raw/USGS_Site02085000_Flow_Raw.csv")
 
 # Another option is to choose with your browser
-# read.csv(file.choose())
+read.csv(file.choose())
 
 # To import .txt files, use read.table rather than read.csv
-#read.table()
+read.table()
 
 ```
 
