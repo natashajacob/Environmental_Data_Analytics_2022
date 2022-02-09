@@ -32,8 +32,8 @@ NTL.phys.data <- read.csv("./Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv", s
 class(NTL.phys.data$sampledate)
 # Format sampledate as date
 NTL.phys.data$sampledate <- as.Date(NTL.phys.data$sampledate, format = "%m/%d/%y")
+class(NTL.phys.data$sampledate)
 ```
-
 
 ## Filter
 
@@ -48,7 +48,8 @@ NTL.phys.data.surface <- filter(NTL.phys.data, depth == 0)
 
 # Choose multiple conditions to filter
 summary(NTL.phys.data$lakename)
-NTL.phys.data.PeterPaul <- filter(NTL.phys.data, lakename %in% c("Paul Lake", "Peter Lake"))
+NTL.phys.data.PeterPaul <- filter(NTL.phys.data, lakename %in% c("Paul Lake", "Peter Lake")) 
+#We used a differnt argument in lessons == |
 
 # Choose a range of conditions of a numeric or integer variable
 summary(NTL.phys.data$daynum)
@@ -57,12 +58,13 @@ NTL.phys.data.JunethruOctober <- filter(NTL.phys.data, daynum %in% c(152:304))
 # Exercise 1: 
 # filter NTL.phys.data for the year 1999
 # what code do you need to use, based on the class of the variable?
-
+class(NTL.phys.data$year4)
+NTL.data.1999 <- filter(NTL.phys.data, year4 == 1999)
 
 # Exercise 2: 
 # filter NTL.phys.data for Tuesday Lake from 1990 through 1999.
-
-
+NTL.phys.Tuesday <- filter(NTL.phys.data, lakename == "Tuesday Lake")
+NTL.1990to1999 <- filter(NTL.phys.Tuesday, year4 >= 1990 & year4 <= 1999)
 ```
 Question: Why don't we filter using row numbers?
 
@@ -83,16 +85,23 @@ NTL.phys.data.processed <-
 
 #Exercise 3: Using a pipe filter NTL.phys.data for Tuesday Lake from 1990 through 1999 only for July 
 
+NTL.phys.data.July <-
+  NTL.1990to1999 %>% 
+  filter(month(sampledate) == 7)
 
-
-
-
+#Alternate:  filter(daynum == 185 | daynum == 206) 
+#instead of using daynum use month 
+  
 #Exercise 4: Using the data from part 3, a pipe and the summarise() function find the mean surface temperature (hints: you will need to add another filter for depth==0). Make sure you eliminate NAs before computing the means
-
+NTL.phys.data.4 <-
+  NTL.phys.data.July %>%
+  filter(depth == 0) %>%
+  filter(!is.na(temperature_C)) %>%
+  summarise(mean = mean(temperature_C))
   
 ```
 
-## Gather and Spread
+## Gather and Spread HOMEWORK 
 
 For gather we will use `pivot_longer` and for spread we will use `pivot_wider`.
 

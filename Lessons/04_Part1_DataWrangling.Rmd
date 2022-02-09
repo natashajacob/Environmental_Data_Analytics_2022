@@ -21,13 +21,13 @@ Opening discussion: why might we be interested in long-term observations of temp
 
 > Add notes here: 
 
-```{r, message = FALSE}
+```{r}
 getwd()
 #install.packages(tidyverse)
 library(tidyverse)
 #install.packages(lubridate)
 library(lubridate)
-NTL.phys.data <- read.csv("./Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv", stringsAsFactors = TRUE)
+NTL.phys.data <- read.csv("../Environmental_Data_Analytics_2022/Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv", stringsAsFactors = TRUE)
 
 colnames(NTL.phys.data)
 head(NTL.phys.data)
@@ -38,6 +38,7 @@ dim(NTL.phys.data)
 class(NTL.phys.data$sampledate)
 # Format sampledate as date
 NTL.phys.data$sampledate <- as.Date(NTL.phys.data$sampledate, format = "%m/%d/%y")
+class(NTL.phys.data$sampledate)
 ```
 
 ## Data Wrangling
@@ -63,21 +64,21 @@ vignette("dplyr")
 Filtering allows us to choose certain rows (observations) in our dataset.
 
 Here are the relevant commands used in the `filter` function. Add some notes to designate what these commands mean. 
-`==`
-`!=`
+`==` to compare
+`!=`to check if variables are different after the operator
 `<`
 `<=`
 `>`
 `>=`
-`&`
-`|`
+`&` if you want both to be true 
+`|` if you want only one to be true 
 
 ```{r}
 class(NTL.phys.data$lakeid)
 class(NTL.phys.data$depth)
 
 # matrix filtering
-NTL.phys.data.surface1 <- NTL.phys.data[NTL.phys.data$depth == 0,]
+NTL.phys.data.surface1 <- NTL.phys.data[NTL.phys.data$depth == 0,] #Filtering rows that have a 0 on column depth
 
 # dplyr filtering
 NTL.phys.data.surface2 <- filter(NTL.phys.data, depth == 0)
@@ -112,8 +113,12 @@ NTL.phys.data.JunethruOctober4 <- filter(NTL.phys.data, daynum %in% c(152:304))
 # what code do you need to use, based on the class of the variable?
 class(NTL.phys.data$year4)
 
+NTL.phys.data.1999 <- filter(NTL.phys.data, year4 == "1999")
+NTL.phys.data.1999.int <- filter(NTL.phys.data, year4 %in% c("1999"))
+
 # Exercise: 
 # filter NTL.phys.data for Tuesday Lake from 1990 through 1999.
+NTL.phys.data.TuesdayLakeHW <- filter(NTL.phys.data, year4 >= 1990 & daynum <= 1999)
 
 
 ```
@@ -133,7 +138,8 @@ NTL.phys.data.depth.descending <- arrange(NTL.phys.data, desc(depth))
 # Arrange NTL.phys.data by temperature, in descending order. 
 # Which dates, lakes, and depths have the highest temperatures?
 
-
+NTL.phys.temp.desc <- arrange(NTL.phys.data, desc(temperature_C))
+# 1998/7/16 East Long Lake 0.5 temp: 34.1
 ```
 ### Select
 
@@ -172,6 +178,8 @@ interval(first(NTL.phys.data.PeterPaul1$sampledate), last(NTL.phys.data.PeterPau
 
 ## Pipes
 
+You need dpylr package to use pipe function
+
 Sometimes we will want to perform multiple functions on a single dataset on our way to creating a processed dataset. We could do this in a series of subsequent functions or create a custom function. However, there is another method to do this that looks cleaner and is easier to read. This method is called a pipe. We designate a pipe with `%>%`. A good way to think about the function of a pipe is with the word "then." 
 
 Let's say we want to take our raw dataset (NTL.phys.data), *then* filter the data for Peter and Paul lakes, *then* select temperature and observation information, and *then* add a column for temperature in Fahrenheit: 
@@ -181,7 +189,7 @@ NTL.phys.data.processed <-
   NTL.phys.data %>%
   filter(lakename == "Paul Lake" | lakename == "Peter Lake") %>%
   select(lakename, sampledate:temperature_C) %>%
-  mutate(temperature_F = (temperature_C*9/5) + 32)
+  mutate(temperature_F = (temperature_C*9/5) + 32) 
   
 ```
 
