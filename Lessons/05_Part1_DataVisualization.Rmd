@@ -21,7 +21,7 @@ Effective data visualization depends on purposeful choices about graph types. Th
 ```{r, message = FALSE, warning = FALSE}
 getwd()
 library(tidyverse)
-#install.packages("ggridges")
+install.packages("ggridges")
 library(ggridges)
 
 PeterPaul.chem.nutrients <- 
