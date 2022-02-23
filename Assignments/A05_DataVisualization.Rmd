@@ -121,7 +121,7 @@ print(Temperature_boxplot)
   theme(axis.text = element_text(color = "black"), legend.position = "none")
   print(Nitrogen_boxplot)
   
-#Creating a separate boxplot of month vs temperature to obtain the legend. (Notice that legend position is specified as "top" in the code)   
+#Creating a separate boxplot of month vs temperature to obtain the legend. (Notice that legend position is specified as "bottom" in the code)   
   Temperature_boxplot1 <- ggplot(PeterPaul_Processed, 
                                  aes(x = month, y = temperature_C)) +
     geom_boxplot(aes(color = lakename)) + 
