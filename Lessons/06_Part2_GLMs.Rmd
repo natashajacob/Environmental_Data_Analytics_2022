@@ -12,11 +12,13 @@ editor_options:
 2. Apply special cases of the GLM (ANOVA) to real datasets
 3. Interpret and report the results of ANOVA in publication-style formats
 
+Interpret the value of the categorical variable as something that you want to add to your model 
+
 ## Set up
 ```{r, message = FALSE}
 getwd()
 library(tidyverse)
-#install.packages("agricolae")
+install.packages("agricolae")
 library(agricolae)   #you may need to install/update package "htmltools" before installing and loading agricolae
 
 Litter <- read.csv("./Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv", stringsAsFactors = TRUE)
@@ -166,5 +168,26 @@ Litter.anova.plot <- ggplot(Litter, aes(y = dryMass, x = nlcdClass, color = func
   geom_boxplot()
 print(Litter.anova.plot)
 
+```
+
+```{r}
+# Modifying the same plot and adding legend.position = "none" to use in the final plot 
+TemperatureByDepth_Plot1 <- ggplot(NTL_wrangled,
+                                  aes(x = depth, y = temperature_C, color = lakename))  +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = lm, se = FALSE) +
+  ylim(0, 35) +
+  ylab(expression("Depth")) +
+  xlab(expression("Temperature")) +
+  ggtitle("Temperature vs Depth plot") +
+  theme(legend.position = "none")
+print(TemperatureByDepth_Plot1)
+
+# Obtaining the legend from the first plot 
+NTL_legend <- get_legend(TemperatureByDepth_Plot2)
+
+#Making the final plot with the legend 
+Combined_plot <- plot_grid(TemperatureByDepth_Plot1, NTL_legend, ncol = 1, nrow = 2, rel_heights = c(5, 0.3))
+Combined_plot
 ```
 

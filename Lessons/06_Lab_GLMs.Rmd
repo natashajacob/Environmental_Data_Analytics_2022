@@ -53,8 +53,8 @@ Continuous response, one categorical explanatory variable with two categories (o
 
 Two hypotheses are formed – the null hypothesis and the alternative hypothesis.
 The null hypothesis and the alternative hypothesis combine to cover all possible values for the population mean.
-The null hypothesis must have the equality.
-The null and alternative hypotheses are always stated in terms of the population mean (mu).
+The null hypothesis must have the equality.Very important. 
+The null and alternative hypotheses are always stated in terms of the population mean (mu). This can be greater or lesser. 
 
 ### One-sample t-test
 The object of a one sample test is to test the null hypothesis that the mean of the group is equal to a specific value. For example, we might ask ourselves (from the EPA air quality processed dataset): 
@@ -65,6 +65,7 @@ Function t.test()
 **mu** a number indicating the true value of the mean (or difference in means if you are performing a two sample test).
 **formula** a formula of the form lhs ~ rhs where lhs is a numeric variable giving the data values and rhs either 1 for a one-sample or paired test or a factor with two levels giving the corresponding groups. If lhs is of class "Pair" and rhs is 1, a paired test is done.
 
+for the Shapiro wilk test, it is not a good thing if p is less than 0.05. p needs to be greater than 1 which means that the data follows a normal distribution
 
 Are Ozone levels below the threshold for "good" AQI index (0-50)?
 
@@ -89,6 +90,8 @@ qqnorm(EPAair$Ozone); qqline(EPAair$Ozone)
 O3.onesample <- t.test(EPAair$Ozone, mu = 50, alternative = "less")
 O3.onesample
 
+#Yes, our mean is lesser than 50 accoring to our very small p value obtained from the t test 
+
 Ozone.plot <- ggplot(EPAair, aes(x = Ozone)) +
   #geom_density(stat = "count", fill = "gray") +
   geom_density(fill = "gray") +
@@ -104,6 +107,8 @@ Write a sentence or two about the results of this test. Include both the results
 ### Two-sample t-test
 
 The two-sample *t* test is used to test the hypothesis that the mean of two samples is equivalent. Unlike the one-sample tests, a two-sample test requires a second assumption that the variance of the two groups is equivalent. Are Ozone levels different between 2018 and 2019?
+
+With the t test we can only check two levels 
 
 ```{r}
 shapiro.test(EPAair$Ozone[EPAair$Year == 2018])
@@ -133,6 +138,7 @@ plot(O3.twosample2)
 
 ```
 
+T test is another way of doing one way anova but with just two levels 
 
 ## Statistical Test: Cheat sheet
 
@@ -192,13 +198,17 @@ For the NTL-LTER dataset, can we predict PM2.5 from Ozone?
 ```{r}
 
 #Exercise 3: Run a linear regression PM2.5 by Ozone. Find the p-value and R-squared value. 
-
+PMbyOzone <- lm(EPAair$PM2.5 ~ EPAair$Ozone)
+summary(PMbyOzone)
 
 
 #Exercise 4: Build a scatterplot. Add a line and standard error for the linear regression. 
 
 
-
+PMbyOzonePlot <- ggplot(EPAair, aes(x = Ozone, y = PM2.5)) +
+  geom_point() +
+  geom_smooth(method = "lm", col = "blue")
+print(PMbyOzonePlot)
 ```
 
 
@@ -209,16 +219,27 @@ What other variables can we add to improve model?
 ```{r}
 
 #Exercise 5: Build correlation plots and identify more possible explanatory variables to add to the regression.
+install.packages("corrplot")
+library(corrplot)
 
+Correlation <-
+  EPAair %>%
+  select(meanLat:Ozone) %>%
+  na.omit()
+EPACorr <- cor(Correlation)
+corrplot(EPACorr, method = "ellipse")
+corrplot.mixed(EPACorr, upper = "ellipse")
 
 
 
 #Exercise 6: Choose a model by AIC in a Stepwise Algorithm. Do the results from AIC match the variables you selected on Exercise 5?
-
-
-
+lm1 <- lm(data = EPAair, PM2.5 ~ meanLat + meanLng + Month + Year + Ozone)
+summary(lm1)
+step(lm1)
 
 #Exercise 7: Run another regression using the variables selected on Exercise 6. Compare r-squared value with the one from Exercise 5. 
+lm2 <- lm(data = EPAair, PM2.5 ~ meanLat + meanLng + Month + Ozone)
+summary(lm2)
 
 ```
 
