@@ -117,20 +117,25 @@ mapView(counties_sf, zcol = "AWATER")
 
 ```{r read HUCs shapefile}
 #Read the shapefile into an sf dataframe named "huc8_sf"
-
+NCHUC8shp <- st_read('../Environmental_Data_Analytics_2022/Data/Spatial/NCHUC8.shp')
 
 #Reveal the columns
-
+colnames(NCHUC8shp)
 
 #Check the CRS
-
+st_crs(NCHUC8shp)
 
 #Examine some records
+head(NCHUC8shp)
+
 
 
 #View the data as a map, colored by the acreage in each
+mapview(NCHUC8shp, zcol = "ACRES")
 
-
+ggplot(data = NCHUC8shp) +
+  geom_sf(aes(fill  = ACRES)) +
+  scale_fill_continuous(type = 'viridis')
 ```
 
 ### 2.2.3 Challenge!
@@ -139,11 +144,15 @@ mapView(counties_sf, zcol = "AWATER")
 
 ```{r Select the Upper Neuse HUC 8}
 #Read the shapefile into an sf dataframe
-
+NCHUC8shp_upperneuse <- st_read('../Environmental_Data_Analytics_2022/Data/Spatial/NCHUC8.shp') %>%
+  filter(SUBBASIN == "Upper Neuse")
 
 
 #Create a map
+mapview(NCHUC8shp_upperneuse)
 
+ggplot(data = NCHUC8shp_upperneuse) +
+  geom_sf()
 
 ```
 
@@ -239,13 +248,15 @@ ggplot() +
 
 ```{r}
 #Compute HUC8 wind energy
-
-
-
+Energy_sf <- st_read('https://raw.githubusercontent.com/ENV859/EnviroAtlasData/main/Wind_Energy.csv',
+   colClasses = c('HUC_12' = 'factor')) %>%
+   mutate(HUC_8 = substr(Energy_sf$HUC_12,1,8)) %>%
+          group_by(HUC_8) %>%
+   summarise(SumWindEnergy = sum(AvgWindEnergy))
 
 #Join to HUC_8 features
 
-
+huc8_join <- merge(x = )
 
 
 #View the outputs
@@ -303,6 +314,11 @@ Projecting data has trade-offs. On the negative side, projecting data distorts d
 What I'm getting at is: it's often a good idea to project data before doing spatial analysis. Packages like `sf` are suited to planar, not spherical data. And measuring distances and areas is much more sensible in linear units, not angular ones.
 
 > Note: GIS software is getting better at working with angular values and also with visualizing 3D (i.e. spherical) data. It's not quite ubiquitous yet, but keep your eye on this.
+
+Shape, area, distance, direction - The things that you  can preserve even though you  use different projections 
+Each country, state has its own coordinate system so that we can focus on that specific country 
+
+High pollution in vulnerable places ~ a project idea !
 
 ### 3.2.3 Projecting your data
 

@@ -32,11 +32,11 @@ The packages we'll need for this lesson are below. Install as necessary and ensu
 library(tidyverse, quietly = TRUE)
 library(lubridate)
 
-#install.packages('sf')
+install.packages('sf')
 library(sf)
-#install.packages('leaflet')
+install.packages('leaflet')
 library(leaflet)
-#install.packages('mapview')
+install.packages('mapview')
 library(mapview)
 
 #Disable on-the-fly projections
@@ -76,7 +76,7 @@ Let's read some geospatial data into our coding environment. The file we'll read
 #Read a spatial dataset
 GasPlants <- st_read('https://opendata.arcgis.com/datasets/a0722062315143a7980cebb79a204781_4.geojson')
 #Alternative
-#GasPlants <- st_read('./Data/Spatial/Manufactured_Gas_Plant_Sites.geojson')
+GasPlants <- st_read('./Data/Spatial/Manufactured_Gas_Plant_Sites.geojson')
 
 #Explore
 class(GasPlants)
@@ -117,9 +117,9 @@ EPAair.sites <- EPAair %>%
 EPAair.sf <- EPAair.sites %>% 
   st_as_sf(coords = c('SITE_LONGITUDE','SITE_LATITUDE'),
            crs=4326)
-
+st_crs(EPAair.sf)
 #View the data using the methods above...
-
+class(EPAair.sf)
 ```
 
 ### EXERCISE: Creating a spatial dataframe from known coordinates
