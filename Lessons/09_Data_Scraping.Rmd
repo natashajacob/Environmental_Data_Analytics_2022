@@ -97,6 +97,12 @@ the_registrant <- webpage %>%
   html_nodes(".table tr:nth-child(1) td:nth-child(2)") %>% 
   html_text()
 the_registrant
+
+
+facility_name <- webpage %>%
+  html_nodes("tr:nth-child(2) th+ .left:nth-child(2)") %>%
+  html_text()
+facility_name
 ```
 
 EXERCISE:
@@ -127,6 +133,11 @@ max_withdrawals <- webpage %>%
   html_nodes('.table:nth-child(7) td:nth-child(8) , .table:nth-child(7) td:nth-child(4)') %>%
   html_text()
 max_withdrawals
+
+mx_with <- webpage %>%
+  html_nodes('.table:nth-child(7) td:nth-child(8) , .table:nth-child(7) td:nth-child(4)') %>%
+  html_text()
+mx_with
 ```
 
 
@@ -150,7 +161,7 @@ df_withdrawals <- df_withdrawals %>%
 #Plot 
 ggplot(df_withdrawals,aes(x=Date,y=Avg_Withdrawals_mgd)) + 
   geom_line() + 
-  geom_smooth(method="loess",se=FALSE) +
+  #geom_smooth(method="loess",se=FALSE) +
   labs(title = paste("2020 Water usage data for",the_registrant),
        subtitle = the_facility_name,
        y="Withdrawal (mgd)",
@@ -202,7 +213,7 @@ df_withdrawals <- data.frame("Month" = rep(1:12),
 ggplot(df_withdrawals,aes(x=Date,y=Avg_Withdrawals_mgd)) + 
   geom_line() + 
   geom_smooth(method="loess",se=FALSE) +
-  labs(title = paste("2020 Water usage data for",the_registrant),
+  labs(title = paste(the_year,"Water usage data for",the_registrant),
        subtitle = the_facility_name,
        y="Withdrawal (mgd)",
        x="Date")

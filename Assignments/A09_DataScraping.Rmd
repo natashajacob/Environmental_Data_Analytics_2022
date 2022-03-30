@@ -1,6 +1,6 @@
 ---
 title: "Assignment 09: Data Scraping"
-author: "Student Name"
+author: "Natasha Jacob"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -29,9 +29,17 @@ This exercise accompanies the lessons in Environmental Data Analytics on data sc
 * Set your ggplot theme
 
 ```{r, message = FALSE}
-#1
+#1 Checking working directory and loading required packages
+getwd()
+library(tidyverse)
+library(rvest)
+library(lubridate)
 
-
+# Setting the ggplot theme
+mytheme <- theme_classic(base_size = 14) +
+  theme(axis.text = element_text(color = "black"), 
+        legend.position = "top")
+theme_set(mytheme)
 ```
 
 2. We will be scraping data from the NC DEQs Local Water Supply Planning website, specifically the Durham's 2019 Municipal Local Water Supply Plan (LWSP): 
@@ -44,8 +52,9 @@ Indicate this website as the as the URL to be scraped. (In other words, read the
 `rvest` webpage object.)
 
 ```{r set.the.scraping.website}
-#2
-
+#2 Indicating the website as the URL to be scraped
+website_URL <- read_html('https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=03-32-010&year=2020')
+website_URL
 
 ```
 
@@ -53,7 +62,7 @@ Indicate this website as the as the URL to be scraped. (In other words, read the
 
 * From the "1. System Information" section:
  * Water system name
- * PSWID
+ * PWSID
  * Ownership
  
 * From the "3. Water Supply Sources" section:
@@ -64,11 +73,29 @@ In the code chunk below scrape these values, assigning them to three separate va
 >HINT: The first value should be "Durham", the second "03-32-010", the third "Municipality", and the last should be a vector of 12 numeric values, with the first value being 36.0100.
 
 ```{r scrape.the.data}
-#3
-water.system.name <- 
-pswid <- 
-ownership <- 
-max.withdrawals.mgd <- 
+#3 Scraping Water system name
+water.system.name <- website_URL %>%
+  html_nodes("div+ table tr:nth-child(1) td:nth-child(2)") %>%
+  html_text()
+water.system.name
+  
+#Scraping PSWID  
+pwsid <- website_URL %>%
+  html_nodes("td tr:nth-child(1) td:nth-child(5)") %>%
+  html_text()
+pwsid
+  
+#Scraping Ownership
+ownership <- website_URL %>%
+  html_nodes("div+ table tr:nth-child(2) td:nth-child(4)") %>%
+  html_text()
+ownership
+  
+#Scraping Average Daily Use (MGD) for each month
+max.withdrawals.mgd <- website_URL %>%
+  html_nodes("th~ td+ td , th~ td+ td") %>%
+  html_text()
+max.withdrawals.mgd
 
 ```
 
@@ -82,11 +109,31 @@ max.withdrawals.mgd <-
 5. Plot the max daily withdrawals across the months for 2020
 
 ```{r create.a.dataframe.from.scraped.data}
-#4
+#4 Converting the scraped data into a dataframe
+df_nc_water <- data.frame("Year" = rep(2020,12),
+                          "Month" = c("Jan", "May", "Sept", "Feb", "June", 
+                                    "Oct", "Mar", "Jul", "Nov", "Apr", "Aug", "Dec"),
+                          "Max_withdrawals_mgd" = as.numeric(max.withdrawals.mgd))
 
+# Modifying the data frame
 
+df_nc_water <- df_nc_water %>%
+  mutate(Water_system_name = !!water.system.name,
+         PWSID = !!pwsid,
+         Ownership = !!ownership,
+         Date = my(paste(Month,"-",Year)),
+         Month = month(Date))
 
-#5
+#5 Plotting the max daily withdrawal across the months for 2020
+
+Max_daily_withdrawal_plot <-
+  ggplot(df_nc_water, aes(x = Date, y = Max_withdrawals_mgd)) +
+  geom_line() +
+  labs(title = paste("2020 Water usage data for",water.system.name),
+       x = "Months",
+       y = "Withdrawal (mgd)") +
+  mytheme
+print(Max_daily_withdrawal_plot)
 
 
 
@@ -95,25 +142,93 @@ max.withdrawals.mgd <-
 6. Note that the PWSID and the year appear in the web address for the page we scraped. Construct a function using your code above that can scrape data for any PWSID and year for which the NC DEQ has data. **Be sure to modify the code to reflect the year and site scraped**.
 
 ```{r construct.a.scraping.function}
-#6.
+#6. Constructing a function for scraping data
+
+the_pwsid <- '03-32-010'
+the_year <- 2020
 
 
+scrape_it <- function(the_year, the_pwsid)
+  {
+base_url <- read_html(paste0('https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=', 
+                             the_pwsid, "&year=", the_year))
+
+
+#Set the element address variables (determined in the previous step)
+water_system_name_tag <- 'div+ table tr:nth-child(1) td:nth-child(2)' 
+pwsid_tag <- 'td tr:nth-child(1) td:nth-child(5)'
+ownership_tag <- 'div+ table tr:nth-child(2) td:nth-child(4)'
+data_tag <- 'th~ td+ td , th~ td+ td'
+
+#Scrape the data items
+the_water_system <- base_url %>%
+  html_nodes(water_system_name_tag) %>%
+  html_text()
+
+the_pwsid <- base_url %>%
+  html_nodes(pwsid_tag) %>%
+  html_text()
+
+the_ownership <- base_url %>%
+  html_nodes(ownership_tag) %>%
+  html_text()
+
+the_withdrawals <- base_url %>%
+  html_nodes(data_tag) %>%
+  html_text()
+
+#Construct a dataframe from the scraped data
+df_withdrawals <- data.frame("Year" = rep(the_year,12),
+                          "Month" = c("Jan", "May", "Sept", "Feb", "June", 
+                                    "Oct", "Mar", "Jul", "Nov", "Apr", "Aug", "Dec"),
+                             "Max_withdrawal_mgd" = as.numeric(the_withdrawals)) %>%
+  mutate(the_water_system_name = !!the_water_system,
+         the_pwsid_name = !!the_pwsid,
+         the_ownership_name = !!the_ownership,
+         Date = my(paste(Month,"-",Year)),
+         Month = month(Date))
+
+return(df_withdrawals)
+}
 
 ```
 
 7. Use the function above to extract and plot max daily withdrawals for Durham (PWSID='03-32-010') for each month in 2015
 
 ```{r fetch.and.plot.Durham.2015.data}
-#7
+#7 Extracting and plotting max daily withdrawals for Durham (for each month in 2015)
+
+Durham_2015 <- scrape_it(2015,'03-32-010')
 
 
+Durham_2015_water_usage <- 
+  ggplot(Durham_2015, aes(x = Date, y = Max_withdrawal_mgd)) +
+  geom_line() +
+  labs(title = '2015 Water usage data for Durham',
+       x = "Months",
+       y = "Maximum daily withdrawal (mgd)") +
+  mytheme
+print(Durham_2015_water_usage)
 ```
 
 8. Use the function above to extract data for Asheville (PWSID = 01-11-010) in 2015. Combine this data with the Durham data collected above and create a plot that compares the Asheville to Durham's water withdrawals.
 
-```{r fetch.and.plot.Durham.2015.data}
+```{r fetch.and.plot.Asheville.2015.data}
 #8
+Asheville_2015 <- scrape_it(2015,'01-11-010')
 
+
+Asheville_2015_water_usage <-
+  ggplot () +
+  geom_line(data = Durham_2015, aes(x = Date, y = Max_withdrawal_mgd), color = "darkgreen") +
+  geom_line(data = Asheville_2015, aes(x = Date, y = Max_withdrawal_mgd), color = "blue") +
+  scale_color_manual(name = "", breaks = c("darkgreen", "blue"), 
+                       labels = c("Durham", "Asheville"), guide = "legend") +
+  labs(title = '2015 Durham and Asheville water usage data',
+       x = "Months",
+       y = "Maximum daily withdrawal (mgd)") +
+  mytheme
+print(Asheville_2015_water_usage)
 
 ```
 
@@ -122,8 +237,27 @@ max.withdrawals.mgd <-
 
 ```{r}
 #9
+the_years <- seq(2010, 2019)
+my_pwsid <- '01-11-010'
 
+Asheville2010to2019 <- the_years %>%
+  map(scrape_it,my_pwsid <- '01-11-010') %>%
+  bind_rows()
+
+#Asheville2010to2019$Year <- as.factor(Asheville2010to2019$Year)
+
+Asheville2010to2019_plot <-
+ggplot(Asheville2010to2019, aes(x = Date, y = Max_withdrawal_mgd)) +
+  geom_line() +
+  geom_smooth(method="loess",se=FALSE) +
+  labs(title = "Asheville's max daily withdrawal from 2010 to 2019",
+       x = "Months",
+       y = "Maximum daily withdrawal (mgd)") +
+  mytheme
+print(Asheville2010to2019_plot)
 
 ```
 
 >Question: Just by looking at the plot (i.e. not running statistics), does Asheville have a trend in water usage over time?
+
+> Yes. An increasing trend in water usage can be observed over a period of time for Asheville.
